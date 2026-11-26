@@ -24,22 +24,44 @@ CREATE TABLE IF NOT EXISTS categories(
 
 -- products table
 CREATE TABLE IF NOT EXISTS products(
-    id             INT AUTO_INCREMENT PRIMARY KEY, 
-    name           VARCHAR(255) NOT NULL,
-    description    VARCHAR(255),
-    price          DECIMAL(10,2) NOT NULL,
-    stock          INT NOT NULL DEFAULT 0,
-    sku            VARCHAR(64) NOT NULL UNIQUE,
-    category_id    INT NOT NULL,
-    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id              INT AUTO_INCREMENT PRIMARY KEY, 
+    title           VARCHAR(255) NOT NULL,
+    description     TEXT,
+    category_id     INT NOT NULL,
+    status          ENUM('active','draft','archived') NOT NULL DEFAULT 'draft',
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
  -- creates indexes
 
-  INDEX idx_products_name (name),
-  INDEX idx_products_price (price),
+  INDEX idx_products_title (title),
   INDEX idx_products_category(category_id),
-
- FOREIGN KEY (category_id) REFERENCES categories(id)
-
+  FOREIGN KEY (category_id) REFERENCES categories(id)
 );
+
+-- product_variants table
+
+CREATE TABLE IF NOT EXISTS product_variants(
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    product_id    INT NOT NULL, 
+    sku           VARCHAR(255) NOT NULL UNIQUE, 
+    size          VARCHAR(20), 
+    colour        VARCHAR(255), 
+    price_paise   INT NOT NULL, 
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+    updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- inventory table
+
+CREATE TABLE IF NOT EXISTS inventory(
+    id          INT AUTO_INCREMENT PRIMARY KEY, 
+    variant_id  INT NOT NULL UNIQUE,        -- variant_id INT NOT NULL --> variant_id INT NOT NULL UNIQUE Should be one inventory row per variant ??
+    on_hand     INT NOT NULL DEFAULT 0, 
+    committed   INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id)
+);	 
+
+
+
